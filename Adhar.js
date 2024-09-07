@@ -4,9 +4,10 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
+require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001; // Use port from environment variables or default to 3001
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -27,11 +28,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 app.use("/uploads", express.static("uploads"));
 
+// Create a MySQL connection using environment variables
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "shahid.2002", // Replace with your MySQL password
-  database: "adhar_database",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 db.connect((err) => {
@@ -82,7 +84,7 @@ app.get("/getAadharDetails/:adharNumber", (req, res) => {
   const adharNumber = req.params.adharNumber;
 
   const frontSql = "SELECT * FROM aadhar_front WHERE adhar_number = ?";
-  const backSql = "SELECT * FROM aadhar_back WHERE   reenter_adhar = ?";
+  const backSql = "SELECT * FROM aadhar_back WHERE reenter_adhar = ?";
 
   db.query(frontSql, [adharNumber], (err, frontResult) => {
     if (err) {
