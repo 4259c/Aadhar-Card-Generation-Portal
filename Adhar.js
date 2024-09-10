@@ -13,6 +13,12 @@ const port = process.env.PORT || 3001; // Use port from environment variables or
 app.use(cors());
 app.use(bodyParser.json());
 
+// Log environment variables for debugging
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_NAME:', process.env.DB_NAME);
+
 // Ensure the uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
