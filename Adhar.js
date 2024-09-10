@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
@@ -12,10 +13,16 @@ const port = process.env.PORT || 3001; // Use port from environment variables or
 app.use(cors());
 app.use(bodyParser.json());
 
+// Ensure the uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 // Multer setup for handling file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads"); // Folder where uploaded files will be stored
+    cb(null, uploadDir); // Use the existing uploads folder
   },
   filename: function (req, file, cb) {
     cb(
@@ -48,7 +55,7 @@ db.connect((err) => {
 // API endpoint to save user details from AdharFront
 app.post("/saveUserDetails", upload.single("image"), (req, res) => {
   const { name, dob, gender, adharNumber } = req.body;
-  const imagePath = req.file.path; // Assuming the image is uploaded using multer middleware
+  const imagePath = req.file ? req.file.path : null; // Check if the file was uploaded
 
   const sql =
     "INSERT INTO aadhar_front (name, dob, gender, adhar_number, image_path) VALUES (?, ?, ?, ?, ?)";
@@ -110,6 +117,12 @@ app.get("/getAadharDetails/:adharNumber", (req, res) => {
       });
     }
   });
+});
+
+// Error-handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 app.listen(port, () => {
